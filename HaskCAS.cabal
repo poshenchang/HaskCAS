@@ -52,7 +52,8 @@ extra-doc-files:    README.md
 -- extra-source-files:
 
 common warnings
-    ghc-options: -Wall
+    default-extensions: OverloadedStrings
+    ghc-options: -Wall -package megaparsec -package text -package parser-combinators
 
 library
     -- Import common warning flags.
