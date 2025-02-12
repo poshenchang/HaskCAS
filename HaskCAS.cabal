@@ -109,4 +109,6 @@ test-suite HaskCAS-test
     -- Test dependencies.
     build-depends:
         base ^>=4.17.2.1,
-        HaskCAS
+        HaskCAS,
+        hspec,
+        QuickCheck
