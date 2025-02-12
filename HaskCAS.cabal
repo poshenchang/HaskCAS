@@ -111,4 +111,5 @@ test-suite HaskCAS-test
         base ^>=4.17.2.1,
         HaskCAS,
         hspec,
+        hspec-discover,
         QuickCheck
