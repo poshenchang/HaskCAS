@@ -1,0 +1,24 @@
+name: HaskCAS
+version: 0.1.0.0
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: lib
+  dependencies:
+  - megaparsec
+  - text
+  - parser-combinators
+
+tests:
+  HaskCAS-test:
+    main: Spec.hs
+    source-dirs: test
+    ghc-options: -Wall
+    dependencies:
+    - HaskCAS
+    - hspec
+    - hspec-discover
+    - QuickCheck
+    other-modules:
+    - HaskCAS.ParserSpec
