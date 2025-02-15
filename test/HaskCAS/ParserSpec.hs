@@ -5,19 +5,28 @@ import Test.QuickCheck
 import HaskCAS.Core
 import HaskCAS.Parser
 
-import Data.Char (isAlpha, isAlphaNum)
+-- String containing all alphabetic characters
+genAlpha :: Gen Char
+genAlpha = elements $ ['a'..'z'] ++ ['A'..'Z']
+
+-- String containing all alphanumeric characters
+genAlphaNum :: Gen Char
+genAlphaNum = elements $ ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9']
 
 -- can parse nonnegative integer constants
-propConst :: Integer -> Bool
-propConst n | n >= 0    = parseExpr (show n) == Right (Const n)
-            | otherwise = True
+prop_Const :: Integer -> Property
+prop_Const n = n >= 0 ==> parseExpr (show n) == Right (Const n)
 
 -- can parse variables
-propVar :: String -> Bool
-propVar s@(x:_) | not (all isAlphaNum s) = True
-                | not (isAlpha x)        = True
-                | otherwise              = parseExpr s == Right (Var s)
-propVar _ = True
+prop_Var :: String -> Bool
+prop_Var s = parseExpr s == Right (Var s)
+
+-- generator for strings of legal formats for variables
+gen_Var :: Gen String
+gen_Var = do
+  x <- genAlpha
+  xs <- listOf genAlphaNum
+  return (x:xs)
 
 main :: IO ()
 main = hspec spec
@@ -26,6 +35,6 @@ spec :: Spec
 spec = do
   describe "parseExpr" $ do
     it "can parse nonnegative integer constants" $ do
-      property $ propConst
+      property $ prop_Const
     it "can parse variables" $ do
-      property $ propVar
+      property $ forAll gen_Var prop_Var
