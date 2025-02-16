@@ -37,11 +37,15 @@ interleave :: [a] -> [a] -> [a]
 interleave (x:xs) ys = x : (interleave ys xs)
 interleave _ _       = []
 
+-- generator for literals (constants and variables) in string formats
+gen_Lit :: Gen String
+gen_Lit = oneof [show <$> gen_Const, gen_Var]
+
 -- generator for strings of legal expression formats
 gen_Expr :: Gen String
 gen_Expr = do
   n <- chooseInt (1, 100)
-  lits <- vectorOf (n+1) (oneof [show <$> gen_Const, gen_Var])
+  lits <- vectorOf (n+1) gen_Lit
   ops <- vectorOf n (elements $ ["+", "-", "*", "/"])
   return (concat $ interleave lits ops)
 
@@ -79,6 +83,31 @@ prop_Negate :: String -> Bool
 prop_Negate exp1 = parseExpr ("-(" ++ exp1 ++ ")") 
                         == (Negate <$> parseExpr exp1)
 
+gen_VarTriple :: Gen (String, String, String)
+gen_VarTriple = do
+  var1 <- gen_Var
+  var2 <- gen_Var
+  var3 <- gen_Var
+  return (var1, var2, var3)
+
+prop_Preced :: (String, String) -> (Expr -> Expr -> Expr) -> (Expr -> Expr -> Expr)
+                -> (String, String, String) -> Bool
+prop_Preced (ops1, ops2) op1 op2 (var1, var2, var3)
+    = parseExpr (var1 ++ ops1 ++ var2 ++ ops2 ++ var3)
+      == Right (op1 (Var var1) (op2 (Var var2) (Var var3)))
+
+prop_PrecedAddMul :: (String, String, String) -> Bool
+prop_PrecedAddMul = prop_Preced ("+", "*") Add Mul
+
+prop_PrecedSubMul :: (String, String, String) -> Bool
+prop_PrecedSubMul = prop_Preced ("-", "*") Sub Mul
+
+prop_PrecedAddDiv :: (String, String, String) -> Bool
+prop_PrecedAddDiv = prop_Preced ("+", "/") Add Div
+
+prop_PrecedSubDiv :: (String, String, String) -> Bool
+prop_PrecedSubDiv = prop_Preced ("-", "/") Sub Div
+
 main :: IO ()
 main = hspec spec
 
@@ -101,3 +130,10 @@ spec = do
       property $ forAll gen_ExprPair prop_Div
     it "can parse negation" $ do
       property $ forAll gen_Expr prop_Negate
+    it "recognizes precedence between arithmetic operations" $
+      property $ conjoin [
+        forAll gen_VarTriple prop_PrecedAddMul,
+        forAll gen_VarTriple prop_PrecedSubMul,
+        forAll gen_VarTriple prop_PrecedAddDiv,
+        forAll gen_VarTriple prop_PrecedSubDiv
+        ]
