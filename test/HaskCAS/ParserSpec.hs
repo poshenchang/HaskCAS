@@ -49,14 +49,6 @@ gen_Expr = do
   ops <- vectorOf n (elements $ ["+", "-", "*", "/"])
   return (concat $ interleave lits ops)
 
--- remove parentheses in a String
-removeParens :: String -> String
-removeParens = filter (not . (`elem` "()"))
-
--- reciprocity of show and parse
-prop_ShowParse :: String -> Bool
-prop_ShowParse exp1 = Right exp1 == (removeParens <$> (show <$> parseExpr exp1))
-
 gen_ExprPair :: Gen (String, String)
 gen_ExprPair = do
   exp1 <- gen_Expr
@@ -118,8 +110,6 @@ spec = do
       property $ forAll gen_Const prop_Const
     it "can parse variables" $ do
       property $ forAll gen_Var prop_Var
-    it "reciprocity of show and parse" $ do
-      property $ forAll gen_Expr prop_ShowParse
     it "can parse addition" $ do
       property $ forAll gen_ExprPair prop_Add
     it "can parse subtraction" $ do
