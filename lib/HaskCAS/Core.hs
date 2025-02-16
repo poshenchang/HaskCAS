@@ -1,10 +1,12 @@
 {-# LANGUAGE InstanceSigs #-}
 module HaskCAS.Core where
 
+import Data.Ratio
+
 -- TODO: add power and functions
 data Expr
     = Var String
-    | Const Integer
+    | Const Rational
     | Add Expr Expr
     | Sub Expr Expr
     | Mul Expr Expr

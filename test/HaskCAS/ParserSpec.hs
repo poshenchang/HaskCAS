@@ -19,7 +19,7 @@ gen_Const = arbitrarySizedNatural
 
 -- can parse nonnegative integer constants
 prop_Const :: Integer -> Bool
-prop_Const n = parseExpr (show n) == Right (Const n)
+prop_Const n = parseExpr (show n) == Right (Const $ fromInteger n)
 
 -- generator for strings of legal variable formats
 gen_Var :: Gen String
